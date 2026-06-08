@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>CP Physiatry — Conference Assistant</title>
+<style>
+:root {
+  --teal:#0B766B; --teal2:#128F83; --teal3:#E6F4F2; --teal4:#085F56;
+  --bg:#F2F2F7; --card:#fff; --border:#E5E5EA;
+  --t1:#1C1C1E; --t2:#555558; --t3:#8E8E93;
+  --red:#FF3B30; --orange:#FF9500; --green:#34C759;
+  --r8:8px; --r12:12px;
+  --sh:0 1px 4px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.04);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--t1);line-height:1.5;-webkit-font-smoothing:antialiased}
+input,select,textarea,button{font-family:inherit}
+button{cursor:pointer}
+#app{max-width:640px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column}
+
+/* Header */
+.hdr{background:var(--teal);color:#fff;height:56px;padding:0 8px;display:flex;align-items:center;position:sticky;top:0;z-index:200;box-shadow:0 1px 6px rgba(0,0,0,.22)}
+.hbtn{background:none;border:none;color:#fff;font-size:15px;font-weight:500;padding:8px 10px;min-width:48px;display:flex;align-items:center;gap:3px;border-radius:8px}
+.hbtn:active{background:rgba(255,255,255,.18)}
+.htitle{flex:1;text-align:center;font-size:17px;font-weight:700;letter-spacing:-.2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 4px}
+
+/* Tab bar */
+.tabbar{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:640px;background:rgba(255,255,255,.96);backdrop-filter:blur(12px);border-top:1px solid var(--border);display:flex;z-index:200;padding-bottom:env(safe-area-inset-bottom,0)}
+.titem{flex:1;background:none;border:none;display:flex;flex-direction:column;align-items:center;padding:8px 0 4px;gap:2px;font-size:10px;font-weight:500;color:var(--t3);transition:color .15s}
+.titem.on{color:var(--teal)}
+.ticon{font-size:22px;line-height:1}
+
+/* Main */
+.main{flex:1;padding:14px 14px 90px;overflow-x:hidden}
+
+/* Cards */
+.card{background:var(--card);border-radius:var(--r12);box-shadow:var(--sh);margin-bottom:12px;overflow:hidden}
+.cbody{padding:14px}
+.subsec{font-size:11px;font-weight:700;color:var(--teal);text-transform:uppercase;letter-spacing:.6px;margin:16px 0 8px;padding-bottom:5px;border-bottom:1.5px solid var(--teal3)}
+.subsec:first-child{margin-top:0}
+
+/* Form */
+.frow{display:flex;gap:10px;margin-bottom:10px}
+.fg{flex:1;display:flex;flex-direction:column;gap:4px}
+.fg.w2{flex:2}.fg.w15{flex:1.5}.fg.w3{flex:3}
+.flbl{font-size:11px;font-weight:600;color:var(--t2);text-transform:uppercase;letter-spacing:.3px}
+.fi{border:1.5px solid var(--border);border-radius:var(--r8);padding:10px 11px;font-size:15px;color:var(--t1);background:var(--bg);width:100%;transition:border-color .2s,background .2s;-webkit-appearance:none;appearance:none}
+select.fi{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238E8E93' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:28px}
+.fi:focus{outline:none;border-color:var(--teal);background:#fff}
+.fi::placeholder{color:var(--t3)}
+textarea.fi{min-height:70px;resize:vertical}
+
+/* Segmented */
+.seg{display:flex;background:var(--bg);border-radius:var(--r8);padding:2px;gap:2px}
+.sbtn{flex:1;padding:6px 5px;border:none;border-radius:6px;font-size:12px;font-weight:500;background:none;color:var(--t2);transition:all .15s;white-space:nowrap}
+.sbtn.on{background:#fff;color:var(--teal);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+
+/* Checkbox */
+.chi{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);cursor:pointer;user-select:none}
+.chi:last-child{border-bottom:none}
+.chb{width:22px;height:22px;border-radius:6px;border:2px solid var(--t3);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s}
+.chb.on{background:var(--teal);border-color:var(--teal)}
+.chb.on::after{content:'✓';color:#fff;font-size:13px;font-weight:800;line-height:1}
+.chlbl{font-size:15px}.chlbl small{font-size:11px;color:var(--t3)}
+
+/* Bilateral grids */
+.bg3{display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:6px;align-items:center;margin-bottom:6px}
+.bg4{display:grid;grid-template-columns:1.2fr 1fr 1fr 1fr;gap:6px;align-items:center;margin-bottom:6px}
+.bg5{display:grid;grid-template-columns:1.2fr 1fr 1fr 1fr 1fr;gap:6px;align-items:center;margin-bottom:6px}
+.bg6{display:grid;grid-template-columns:1.2fr 1fr 1fr 1fr 1fr 1fr;gap:5px;align-items:center;margin-bottom:6px}
+.ch{text-align:center;font-size:10px;font-weight:800;color:var(--teal);background:var(--teal3);padding:4px 2px;border-radius:4px;letter-spacing:.3px}
+.rl{font-size:13px;color:var(--t2);line-height:1.3}
+.rl small{font-size:10px;color:var(--t3);display:block}
+.rl b{color:var(--t1)}
+.ti{border:1.5px solid var(--border);border-radius:6px;padding:6px 4px;font-size:13px;text-align:center;background:var(--bg);width:100%;color:var(--t1);-webkit-appearance:none}
+.ti:focus{outline:none;border-color:var(--teal);background:#fff}
+.ti::placeholder{color:var(--t3);font-size:11px}
+select.ti{padding:6px 2px;font-size:12px}
+.hint{font-size:11px;color:var(--t3);font-style:italic;margin:3px 0 6px}
+.interp{background:var(--teal3);border-radius:8px;padding:7px 10px;font-size:12px;color:var(--teal);font-weight:600;text-align:center}
+
+/* Patient list */
+.ptcard{background:var(--card);border-radius:var(--r12);box-shadow:var(--sh);padding:13px 14px;margin-bottom:10px;display:flex;align-items:center;gap:13px;cursor:pointer;transition:transform .1s;position:relative}
+.ptcard:active{transform:scale(.98)}
+.pava{width:46px;height:46px;border-radius:50%;background:var(--teal3);color:var(--teal);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;flex-shrink:0}
+.pname{font-size:16px;font-weight:700}.pmeta{font-size:12px;color:var(--t3);margin-top:2px}
+.pbadge{background:var(--teal3);color:var(--teal);font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;white-space:nowrap}
+.pdel{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--t3);font-size:18px;padding:8px;display:none}
+.ptcard:hover .pdel{display:block}
+.fab{position:fixed;bottom:74px;right:max(16px,calc(50% - 306px));width:56px;height:56px;border-radius:50%;background:var(--teal);color:#fff;font-size:30px;border:none;box-shadow:0 4px 18px rgba(11,118,107,.45);display:flex;align-items:center;justify-content:center;transition:transform .1s;z-index:100}
+.fab:active{transform:scale(.92)}
+
+/* Exam tabs */
+.etabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:10px;scrollbar-width:none}
+.etabs::-webkit-scrollbar{display:none}
+.etab{flex-shrink:0;padding:7px 12px;border-radius:20px;font-size:12px;font-weight:500;border:none;background:var(--card);color:var(--t2);box-shadow:var(--sh);transition:all .15s}
+.etab.on{background:var(--teal);color:#fff}
+
+/* Summary */
+.sumhdr{background:var(--teal);color:#fff;border-radius:var(--r12);padding:18px 16px;margin-bottom:12px}
+.sumname{font-size:21px;font-weight:800}
+.sumsub{font-size:13px;opacity:.88;margin-top:4px}
+.sumchips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.chip{background:rgba(255,255,255,.2);color:#fff;font-size:12px;font-weight:600;padding:3px 10px;border-radius:20px}
+.sumsec{background:var(--card);border-radius:var(--r12);box-shadow:var(--sh);padding:13px 14px;margin-bottom:10px}
+.sst{font-size:12px;font-weight:700;color:var(--teal);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px;padding-bottom:6px;border-bottom:1.5px solid var(--teal3)}
+.srow{display:flex;justify-content:space-between;align-items:flex-start;padding:5px 0;font-size:13px;border-bottom:1px solid var(--bg)}
+.srow:last-child{border-bottom:none}
+.sk{color:var(--t2);flex:1;padding-right:8px}
+.sv{font-weight:600;text-align:right;flex:1}
+.lr{display:inline-flex;align-items:center;gap:3px;margin-left:5px}
+.lrl{font-size:9px;font-weight:800;color:var(--teal);background:var(--teal3);padding:1px 4px;border-radius:3px}
+.tpos{background:#FFE5E4;color:var(--red);font-size:11px;font-weight:700;padding:2px 6px;border-radius:5px}
+.tneg{background:#E4F9EB;color:var(--green);font-size:11px;font-weight:700;padding:2px 6px;border-radius:5px}
+.twarn{background:#FFF4E0;color:var(--orange);font-size:11px;font-weight:700;padding:2px 6px;border-radius:5px}
+.pretext{font-size:13px;white-space:pre-wrap;line-height:1.7;color:var(--t1)}
+
+/* Report block */
+.rptbox{background:#F8F9FA;border:1px solid var(--border);border-radius:var(--r8);padding:14px;font-size:13px;line-height:1.8;color:var(--t1);white-space:pre-wrap;margin-bottom:10px}
+.rptbox h4{font-size:12px;font-weight:700;color:var(--teal);text-transform:uppercase;letter-spacing:.4px;margin:10px 0 4px}
+.rptbox h4:first-child{margin-top:0}
+
+/* Buttons */
+.btnp{display:flex;align-items:center;justify-content:center;gap:8px;background:var(--teal);color:#fff;border:none;border-radius:var(--r12);padding:14px;font-size:16px;font-weight:700;width:100%;margin-bottom:10px;box-shadow:0 4px 14px rgba(11,118,107,.28)}
+.btnp:active{background:var(--teal4)}
+.btns{display:flex;align-items:center;justify-content:center;gap:8px;background:var(--card);color:var(--teal);border:1.5px solid var(--border);border-radius:var(--r12);padding:13px;font-size:15px;font-weight:600;width:100%;margin-bottom:10px;box-shadow:var(--sh)}
+.btnd{display:flex;align-items:center;justify-content:center;gap:8px;background:var(--card);color:var(--red);border:1.5px solid #FFDAD7;border-radius:var(--r12);padding:12px;font-size:14px;font-weight:600;width:100%;margin-bottom:10px}
+.navbtns{display:flex;gap:8px;margin-top:14px}
+.navbtns .btns,.navbtns .btnp{margin-bottom:0;flex:1}
+
+/* Empty */
+.empty{text-align:center;padding:50px 24px;color:var(--t3)}
+.ei{font-size:58px;margin-bottom:14px}.et{font-size:18px;font-weight:700;color:var(--t2);margin-bottom:8px}.ed{font-size:14px;line-height:1.6}
+
+/* Alert */
+.alert{border-radius:var(--r8);padding:9px 12px;font-size:12px;margin-bottom:10px;display:flex;align-items:flex-start;gap:7px}
+.ainfo{background:#EEF6FF;color:#0066CC}
+.awarn{background:#FFF4E0;color:#995500}
+
+/* Toast */
+#toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:rgba(30,30,30,.9);color:#fff;padding:9px 20px;border-radius:20px;font-size:14px;font-weight:500;z-index:999;opacity:0;transition:opacity .25s;pointer-events:none;white-space:nowrap}
+
+/* Position badge */
+.posbadge{display:inline-flex;align-items:center;gap:6px;background:var(--teal);color:#fff;font-size:12px;font-weight:700;padding:5px 12px;border-radius:20px;margin-bottom:12px}
+
+/* Print */
+@media print{
+  body{background:#fff;font-size:10px}
+  .hdr,.tabbar,.fab,.btnp,.btns,.btnd,.etabs,.navbtns,.no-print{display:none!important}
+  #app{max-width:100%}
+  .main{padding:0}
+  .sumsec,.sumhdr{box-shadow:none!important;border:1px solid #DDD;break-inside:avoid}
+  .sumhdr{background:var(--teal)!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  @page{margin:1.5cm}
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <header class="hdr">
+    <button class="hbtn" id="hbk" style="display:none" onclick="goBack()">&#8592; Back</button>
+    <span class="htitle" id="htitle">CP Physiatry</span>
+    <button class="hbtn" id="hsave" style="display:none" onclick="manualSave()">Save</button>
+  </header>
+  <main class="main" id="main"></main>
+  <nav class="tabbar">
+    <button class="titem on" id="tab-pts" onclick="nav('pts')"><span class="ticon">👥</span><span>Patients</span></button>
+    <button class="titem" id="tab-exam" onclick="nav('exam')"><span class="ticon">📋</span><span>Exam</span></button>
+    <button class="titem" id="tab-sum" onclick="nav('sum')"><span class="ticon">📄</span><span>Report</span></button>
+  </nav>
+</div>
+<div id="toast"></div>
+
+<script>
+// ════════════════════════════════════════════════
+// SECTIONS — follow PDF exam-position sequence
+// ════════════════════════════════════════════════
+const SECS = [
+  {id:'profile', icon:'📋', lbl:'Profile'},
+  {id:'hx',      icon:'🗂️', lbl:'History'},
+  {id:'gait',    icon:'🚶', lbl:'Walking'},
+  {id:'supine',  icon:'🛏️', lbl:'Supine'},
+  {id:'bedEdge', icon:'🦵', lbl:'Bed Edge'},
+  {id:'prone',   icon:'🔄', lbl:'Prone'},
+  {id:'other',   icon:'➕', lbl:'Other'},
+  {id:'plan',    icon:'📝', lbl:'Plan'},
+];
+
+// ════════════════════════════════════════════════
+// STATE
+// ════════════════════════════════════════════════
+let S = {view:'pts', sec:'profile', pid:null, patients:[]};
+
+function load(){try{const r=localStorage.getItem('cp_v3');if(r){const d=JSON.parse(r);S.patients=d.patients||[];}}catch(e){}}
+function save(){try{localStorage.setItem('cp_v3',JSON.stringify({patients:S.patients}));}catch(e){}}
+function curr(){return S.patients.find(p=>p.id===S.pid)||null;}
+function today(){return new Date().toISOString().split('T')[0];}
+
+function blankPt(){
+  return {
+    id:Date.now().toString(), createdAt:new Date().toISOString(), updatedAt:new Date().toISOString(),
+    profile:{name:'',hn:'',age:'',dob:'',sex:'M',cpType:'',gmfcs:'',macs:'',examiner:'',date:today()},
+    hx:{ambStatus:'',adl:'',communication:'',school:'',conferenceReason:'',previousTx:''},
+    gait:{
+      device:'',
+      // Coronal
+      trunkBend:'none', scissoring:false, equinovarus:'none',
+      fpaL:'normal', fpaR:'normal',
+      // Sagittal
+      lumbarLordosis:false,
+      hipFlexL:'', hipFlexR:'',
+      kneeFlexL:'', kneeFlexR:'',
+      anklePatL:'', anklePatR:'',
+      gaitNotes:''
+    },
+    supine:{
+      lldTrueL:'',lldTrueR:'',lldAppL:'',lldAppR:'',
+      // Hip flexor
+      hfPwrL:'',hfPwrR:'',hfRomL:'',hfRomR:'',hfMasL:'',hfMasR:'',
+      // Knee extensor
+      kePwrL:'',kePwrR:'',keRomL:'',keRomR:'',keMasL:'',keMasR:'',
+      // Popliteal
+      poplR1L:'',poplR2L:'',poplR1R:'',poplR2R:'',
+      // Hamstring shift
+      hmShiftL:false,hmShiftR:false,hmShiftDegL:'',hmShiftDegR:'',
+      // Ankle DF
+      adfPwrL:'',adfPwrR:'',adfRomL:'',adfRomR:'',adfMasL:'',adfMasR:'',
+      // Ankle PF
+      apfPwrL:'',apfPwrR:'',apfRomL:'',apfRomR:'',apfMasL:'',apfMasR:'',
+      // Silverskiold
+      silvKeL:'',silvKfL:'',silvKe2L:'',silvKf2L:'',
+      silvKeR:'',silvKfR:'',silvKe2R:'',silvKf2R:''
+    },
+    bedEdge:{
+      // Modified Thomas
+      thomHipL:'',thomKneeL:'',thomHipR:'',thomKneeR:'',
+      // Phelps Baker — 3 positions × R1/R2 × L/R
+      phHekeR1L:'',phHekeR2L:'',phHekfR1L:'',phHekfR2L:'',phHfkfR1L:'',phHfkfR2L:'',
+      phHekeR1R:'',phHekeR2R:'',phHekfR1R:'',phHekfR2R:'',phHfkfR1R:'',phHfkfR2R:''
+    },
+    prone:{
+      staheliL:'',staheliR:'',
+      duncanL:false,duncanR:false,
+      // Hip extension
+      hipExtPwrL:'',hipExtPwrR:'',hipExtRomL:'',hipExtRomR:'',
+      // Knee flexion
+      kfPwrL:'',kfPwrR:'',kfRomL:'',kfRomR:'',
+      // Rotational profile
+      hirL:'',hirR:'',herL:'',herR:'',
+      tfaL:'',tfaR:'',
+      transmalL:'',transmalR:'',
+      heelBisL:'',heelBisR:''
+    },
+    other:{
+      uePwrR:'',uePwrL:'',handFn:'',kneelingWalk:'',sittingBalance:'',notes:''
+    },
+    plan:{
+      // Clinical reasoning per group
+      hipFlexAssess:'',kneeFlexAssess:'',anklePfAssess:'',
+      sagPatL:'',sagPatR:'',
+      // Management
+      oralMeds:'',botox:'',surgical:'',orthosisType:'',orthosisDetail:'',
+      pt:'',ot:'',hipSurveillance:false,holistic:'',
+      problemList:'',managementPlan:''
+    }
+  };
+}
+
+// ════════════════════════════════════════════════
+// NAVIGATION
+// ════════════════════════════════════════════════
+function nav(view,id){
+  autoSave();
+  S.view=view;
+  if(id){S.pid=id;S.sec='profile';}
+  render();
+}
+function goBack(){nav('pts');}
+function switchSec(s){autoSave();S.sec=s;render();}
+function manualSave(){autoSave();toast('Saved ✓');}
+
+// ════════════════════════════════════════════════
+// RENDER
+// ════════════════════════════════════════════════
+function render(){
+  ['pts','exam','sum'].forEach(t=>{
+    const el=document.getElementById('tab-'+t);
+    if(el) el.classList.toggle('on',S.view===t);
+  });
+  const bk=document.getElementById('hbk'),sv=document.getElementById('hsave'),tl=document.getElementById('htitle');
+  if(S.view==='pts'){bk.style.display='none';sv.style.display='none';tl.textContent='CP Physiatry';}
+  else if(S.view==='exam'){bk.style.display='flex';sv.style.display='flex';tl.textContent=curr()?.profile?.name||'New Patient';}
+  else{bk.style.display='none';sv.style.display='none';tl.textContent=S.view==='sum'?'Case Report':'CP Physiatry';}
+  const m=document.getElementById('main');
+  if(S.view==='pts') m.innerHTML=renderPts();
+  else if(S.view==='exam') m.innerHTML=renderExam();
+  else m.innerHTML=renderSum();
+}
+
+// ════════════════════════════════════════════════
+// PATIENTS VIEW
+// ════════════════════════════════════════════════
+function renderPts(){
+  let h=`<div style="font-size:12px;color:var(--t3);margin-bottom:10px">${S.patients.length} record${S.patients.length!==1?'s':''}</div>`;
+  if(!S.patients.length){
+    h+=`<div class="empty"><div class="ei">🧒</div><div class="et">No Patients</div><div class="ed">Tap + to add a CP patient for conference.</div></div>`;
+  } else {
+    [...S.patients].reverse().forEach(p=>{
+      const nm=p.profile.name||'Unnamed';
+      const init=nm.trim().split(/\s+/).map(w=>w[0]).join('').slice(0,2).toUpperCase()||'?';
+      const gmfcs=p.profile.gmfcs?'GMFCS '+p.profile.gmfcs:'';
+      const meta=[p.profile.age?'Age '+p.profile.age:'',p.profile.hn?'HN: '+p.profile.hn:'',fmtDate(p.profile.date)].filter(Boolean).join(' · ');
+      h+=`<div class="ptcard" onclick="nav('exam','${p.id}')">
+        <div class="pava">${esc(init)}</div>
+        <div style="flex:1;min-width:0"><div class="pname">${esc(nm)}</div><div class="pmeta">${esc(meta)}</div></div>
+        ${gmfcs?`<span class="pbadge">${esc(gmfcs)}</span>`:''}
+        <button class="pdel" onclick="event.stopPropagation();delPt('${p.id}')">✕</button>
+      </div>`;
+    });
+  }
+  return h+`<button class="fab" onclick="addPt()">+</button>`;
+}
+function addPt(){const p=blankPt();S.patients.push(p);save();nav('exam',p.id);}
+function delPt(id){if(!confirm('Delete this record?'))return;S.patients=S.patients.filter(p=>p.id!==id);if(S.pid===id)S.pid=null;save();render();}
+
+// ════════════════════════════════════════════════
+// EXAM VIEW
+// ════════════════════════════════════════════════
+function renderExam(){
+  const p=curr();
+  if(!p) return `<div class="empty"><div class="ei">📋</div><div class="et">No Patient Selected</div><div class="ed">Go to Patients tab first.</div></div>`;
+  const idx=SECS.findIndex(s=>s.id===S.sec);
+  let tabs=`<div class="etabs">`;
+  SECS.forEach(s=>{ tabs+=`<button class="etab ${S.sec===s.id?'on':''}" onclick="switchSec('${s.id}')">${s.icon} ${s.lbl}</button>`; });
+  tabs+=`</div>`;
+  let body='';
+  switch(S.sec){
+    case 'profile': body=tProfile(p); break;
+    case 'hx':      body=tHx(p); break;
+    case 'gait':    body=tGait(p); break;
+    case 'supine':  body=tSupine(p); break;
+    case 'bedEdge': body=tBedEdge(p); break;
+    case 'prone':   body=tProne(p); break;
+    case 'other':   body=tOther(p); break;
+    case 'plan':    body=tPlan(p); break;
+  }
+  const hasPrev=idx>0,hasNext=idx<SECS.length-1;
+  const nav2=`<div class="navbtns">
+    ${hasPrev?`<button class="btns" onclick="switchSec('${SECS[idx-1].id}')">← ${SECS[idx-1].lbl}</button>`:'<div style="flex:1"></div>'}
+    ${hasNext?`<button class="btnp" onclick="switchSec('${SECS[idx+1].id}')">${SECS[idx+1].lbl} →</button>`:`<button class="btnp" onclick="nav('sum')">📄 View Report</button>`}
+  </div>`;
+  return tabs+body+nav2;
+}
+
+// ─────────────────────────────
+// Helpers for form elements
+// ─────────────────────────────
+const pwrOpts = v => ['','5','4+','4','4-','3+','3','3-','2','1','0'].map(o=>`<option value="${o}" ${v===o?'selected':''}>${o||'—'}</option>`).join('');
+const masOpts = v => ['','0','1','1+','2','3','4'].map(o=>`<option value="${o}" ${v===o?'selected':''}>${o||'—'}</option>`).join('');
+const scOpts  = v => ['','Normal','Spastic','Contracture','Both'].map(o=>`<option value="${o}" ${v===o?'selected':''}>${o||'—'}</option>`).join('');
+
+function ni(id,val,ph='°'){return `<input class="ti" type="number" id="f_${id}" value="${esc(val)}" placeholder="${ph}" oninput="autoSave()">`;}
+function si(id,val,opts){return `<select class="ti" id="f_${id}" onchange="autoSave()">${opts(val)}</select>`;}
+
+// header row for bilateral grids
+function colHdr(...labels){return labels.map(l=>`<div class="ch">${l}</div>`).join('');}
+
+// ─────────────────────────────
+// 1. Profile
+// ─────────────────────────────
+function tProfile(p){
+  const d=p.profile;
+  return `<div class="card"><div class="cbody">
+    <div class="subsec">Patient Information</div>
+    <div class="frow">
+      <div class="fg w2"><label class="flbl">Name</label><input class="fi" id="f_name" value="${esc(d.name)}" placeholder="Full name" oninput="autoSave()"></div>
+      <div class="fg"><label class="flbl">HN</label><input class="fi" id="f_hn" value="${esc(d.hn)}" placeholder="HN" oninput="autoSave()"></div>
+    </div>
+    <div class="frow">
+      <div class="fg"><label class="flbl">Sex</label>
+        <select class="fi" id="f_sex" onchange="autoSave()">
+          ${['M','F'].map(v=>`<option value="${v}" ${d.sex===v?'selected':''}>${v==='M'?'Male':'Female'}</option>`).join('')}
+        </select></div>
+      <div class="fg"><label class="flbl">Age (yrs)</label><input class="fi" type="number" id="f_age" value="${esc(d.age)}" placeholder="e.g. 14" oninput="autoSave()"></div>
+      <div class="fg w2"><label class="flbl">Date of Birth</label><input class="fi" type="date" id="f_dob" value="${esc(d.dob)}" oninput="autoSave()"></div>
+    </div>
+    <div class="subsec">Diagnosis</div>
+    <div class="frow">
+      <div class="fg w2"><label class="flbl">CP Type</label>
+        <select class="fi" id="f_cpType" onchange="autoSave()">
+          <option value="">— Select —</option>
+          ${['Spastic Diplegia','Spastic Hemiplegia (R)','Spastic Hemiplegia (L)','Spastic Quadriplegia','Dyskinetic','Ataxic','Mixed'].map(v=>`<option value="${v}" ${d.cpType===v?'selected':''}>${v}</option>`).join('')}
+        </select></div>
+      <div class="fg"><label class="flbl">GMFCS</label>
+        <select class="fi" id="f_gmfcs" onchange="autoSave()"><option value="">—</option>
+          ${['I','II','III','IV','V'].map(v=>`<option value="${v}" ${d.gmfcs===v?'selected':''}>${v}</option>`).join('')}
+        </select></div>
+    </div>
+    <div class="frow">
+      <div class="fg"><label class="flbl">MACS</label>
+        <select class="fi" id="f_macs" onchange="autoSave()"><option value="">—</option>
+          ${['I','II','III','IV','V'].map(v=>`<option value="${v}" ${d.macs===v?'selected':''}>${v}</option>`).join('')}
+        </select></div>
+      <div class="fg w2"><label class="flbl">Examiner</label><input class="fi" id="f_examiner" value="${esc(d.examiner)}" placeholder="Dr. / PT" oninput="autoSave()"></div>
+      <div class="fg"><label class="flbl">Date</label><input class="fi" type="date" id="f_date" value="${esc(d.date)}" oninput="autoSave()"></div>
+    </div>
+  </div></div>`;
+}
+
+// ─────────────────────────────
+// 2. History
+// ─────────────────────────────
+function tHx(p){
+  const d=p.hx;
+  return `<div class="card"><div class="cbody">
+    <div class="subsec">Ambulation &amp; Function</div>
+    <div class="fg" style="margin-bottom:10px"><label class="flbl">Ambulation Status</label>
+      <select class="fi" id="f_ambStatus" onchange="autoSave()">
+        <option value="">— Select —</option>
+        ${['Independent (community)','Independent (household)','With wheelwalker','With forearm crutches','With axillary crutches','With 1 cane','With manual wheelchair','Dependent'].map(v=>`<option value="${v}" ${d.ambStatus===v?'selected':''}>${v}</option>`).join('')}
+      </select></div>
+    <div class="fg" style="margin-bottom:10px"><label class="flbl">ADL / Hand Function</label>
+      <textarea class="fi" id="f_adl" placeholder="Self-care, feeding, dressing…" oninput="autoSave()">${esc(d.adl)}</textarea></div>
+    <div class="frow">
+      <div class="fg"><label class="flbl">Communication</label>
+        <select class="fi" id="f_communication" onchange="autoSave()">
+          <option value="">—</option>
+          ${['Normal','Dysarthria (mild)','Dysarthria (moderate)','Dysarthria (severe)','AAC device','Non-verbal'].map(v=>`<option value="${v}" ${d.communication===v?'selected':''}>${v}</option>`).join('')}
+        </select></div>
+      <div class="fg"><label class="flbl">School / Cognitive</label>
+        <input class="fi" id="f_school" value="${esc(d.school)}" placeholder="Grade, school type" oninput="autoSave()"></div>
+    </div>
+    <div class="subsec">Conference Context</div>
+    <div class="fg" style="margin-bottom:10px"><label class="flbl">นำเข้าที่ประชุมเพื่อ (Reason for Conference)</label>
+      <textarea class="fi" id="f_conferenceReason" placeholder="e.g. BTX-A injection planning / gait analysis / orthosis fitting…" oninput="autoSave()">${esc(d.conferenceReason)}</textarea></div>
+    <div class="fg"><label class="flbl">ผ่านการรักษา (Previous Treatment)</label>
+      <textarea class="fi" id="f_previousTx" placeholder="BTX-A Rx, orthosis history, surgery, PT/OT…" oninput="autoSave()">${esc(d.previousTx)}</textarea></div>
+  </div></div>`;
+}
+
+// ─────────────────────────────
+// 3. Walking Exam (Gait)
+// ─────────────────────────────
+function tGait(p){
+  const d=p.gait;
+  function cb(key,label,sub){
+    return `<div class="chi" onclick="tog('gait','${key}')">
+      <div class="chb ${d[key]?'on':''}"></div>
+      <div class="chlbl">${label}${sub?` <small>${sub}</small>`:''}</div></div>`;
+  }
+  const fpaSeg = (side) => {
+    const key='fpa'+side; const val=d[key];
+    return `<div class="seg" style="margin-top:4px">
+      ${[['normal','Normal'],['toeIn','Toe-In (−)'],['toeOut','Toe-Out (+)']].map(([v,l])=>
+        `<button class="sbtn ${val===v?'on':''}" onclick="setFPA('${key}','${v}')">${l}</button>`
+      ).join('')}
+    </div>`;
+  };
+  const scat = v => ['','Spastic','Contracture','Both'].map(o=>`<option value="${o}" ${v===o?'selected':''}>${o||'—'}</option>`).join('');
+  const apat = v => ['','Normal','True Equinus','Jump Knee','Apparent Equinus','Crouch Gait','Knee Recurvatum'].map(o=>`<option value="${o}" ${v===o?'selected':''}>${o||'—'}</option>`).join('');
+
+  return `
+  <div class="posbadge">🚶 Observe Gait Pattern</div>
+  <div class="alert ainfo">ℹ️ Examine walking <b>without orthosis</b> + with assistive device. Check all applicable findings.</div>
+  <div class="card"><div class="cbody">
+    <div class="subsec">Device Used</div>
+    <select class="fi" id="f_device" onchange="autoSave()">
+      <option value="">— Select —</option>
+      ${['Without orthosis','Wheelwalker','Forearm crutches','Axillary crutches','Quad cane','AFO only','Other'].map(v=>`<option value="${v}" ${d.device===v?'selected':''}>${v}</option>`).join('')}
+    </select>
+  </div></div>
+
+  <div class="card"><div class="cbody">
+    <div class="subsec">Coronal Plane</div>
+    <div class="fg" style="margin-bottom:10px">
+      <label class="flbl">Trunk — Lateral Trunk Bending</label>
+      <div class="seg" style="margin-top:4px">
+        ${[['none','None'],['L','To Left'],['R','To Right'],['bilateral','Bilateral']].map(([v,l])=>
+          `<button class="sbtn ${d.trunkBend===v?'on':''}" onclick="setField('gait','trunkBend','${v}')">${l}</button>`
+        ).join('')}
+      </div>
+    </div>
+    ${cb('scissoring','Scissoring Gait','Hip adductor spastic/contracture or weak hip abductor')}
+    <div class="fg" style="margin-top:10px">
+      <label class="flbl">Ankle Equinovarus (Toe-In)</label>
+      <div class="seg" style="margin-top:4px">
+        ${[['none','None'],['L','Left'],['R','Right'],['bilateral','Bilateral']].map(([v,l])=>
+          `<button class="sbtn ${d.equinovarus===v?'on':''}" onclick="setField('gait','equinovarus','${v}')">${l}</button>`
+        ).join('')}
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px">
+      <div class="fg"><label class="flbl">Foot Progression — Left</label>${fpaSeg('L')}</div>
+      <div class="fg"><label class="flbl">Foot Progression — Right</label>${fpaSeg('R')}</div>
+    </div>
+  </div></div>
+
+  <div class="card"><div class="cbody">
+    <div class="subsec">Sagittal Plane</div>
+    ${cb('lumbarLordosis','Lumbar Hyperlordosis','Ant. pelvic tilt — tight hip flex/back ext vs weak abdominals/hip ext')}
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px">
+      <div class="fg"><label class="flbl">Hip Flex — Left</label><select class="fi" id="f_hipFlexL" onchange="autoSave()">${scat(d.hipFlexL)}</select></div>
+      <div class="fg"><label class="flbl">Hip Flex — Right</label><select class="fi" id="f_hipFlexR" onchange="autoSave()">${scat(d.hipFlexR)}</select></div>
+      <div class="fg"><label class="flbl">Knee Flex — Left</label><select class="fi" id="f_kneeFlexL" onchange="autoSave()">${scat(d.kneeFlexL)}</select></div>
+      <div class="fg"><label class="flbl">Knee Flex — Right</label><select class="fi" id="f_kneeFlexR" onchange="autoSave()">${scat(d.kneeFlexR)}</select></div>
+      <div class="fg"><label class="flbl">Ankle Pattern — Left</label><select class="fi" id="f_anklePatL" onchange="autoSave()">${apat(d.anklePatL)}</select></div>
+      <div class="fg"><label class="flbl">Ankle Pattern — Right</label><select class="fi" id="f_anklePatR" onchange="autoSave()">${apat(d.anklePatR)}</select></div>
+    </div>
+  </div></div>
+
+  <div class="card"><div class="cbody">
+    <div class="subsec">Observer Notes</div>
+    <textarea class="fi" id="f_gaitNotes" placeholder="Additional gait observations, video timestamp notes…" oninput="autoSave()">${esc(d.gaitNotes)}</textarea>
+  </div></div>`;
+}
+
+// ─────────────────────────────
+// 4. Supine Exam (flat on table)
+// ─────────────────────────────
+function tSupine(p){
+  const d=p.supine;
+
+  function prmRow(label, kPwrL,kPwrR,kRomL,kRomR,kMasL,kMasR,norm){
+    return `
+    <div class="bg6" style="margin-bottom:4px">
+      <div></div><div class="ch">Pwr L</div><div class="ch">Pwr R</div>
+      <div class="ch">ROM L</div><div class="ch">ROM R</div>
+      <div class="ch">MAS L</div><div class="ch">MAS R</div>
+    </div>
+    <div class="bg6">
+      <div class="rl"><b>${label}</b>${norm?`<small>ROM norm: ${norm}</small>`:''}</div>
+      ${si('f_'+kPwrL,d[kPwrL],pwrOpts)}${si('f_'+kPwrR,d[kPwrR],pwrOpts)}
+      ${ni('f_'+kRomL,d[kRomL],'°')}${ni('f_'+kRomR,d[kRomR],'°')}
+      ${si('f_'+kMasL,d[kMasL],masOpts)}${si('f_'+kMasR,d[kMasR],masOpts)}
+    </div>`;
+  }
+
+  const silvIntL=silvInterp(d.silvKeL,d.silvKfL);
+  const silvIntR=silvInterp(d.silvKeR,d.silvKfR);
+
+  return `
+  <div class="posbadge">🛏️ Supine — Flat on Table</div>
+
+  <!-- LLD -->
+  <div class="card"><div class="cbody">
+    <div class="subsec">Leg Length Discrepancy (cm)</div>
+    <div class="bg3"><div></div><div class="ch">LEFT</div><div class="ch">RIGHT</div></div>
+    <div class="bg3">${ni3('True','ASIS→Med.Mall.','lldTrueL','lldTrueR',d)}</div>
+    <div class="bg3">${ni3('Apparent','Umb→Med.Mall.','lldAppL','lldAppR',d)}</div>
+    <div class="hint">Apparent ≠ True → pelvic obliquity / scoliosis</div>
+  </div></div>
+
+  <!-- Hip flexor + Knee extensor -->
+  <div class="card"><div class="cbody">
+    <div class="subsec">Hip Flexor &amp; Knee Extensor</div>
+    <div class="hint">Power: MRC scale · ROM: degrees · MAS: Modified Ashworth Scale</div>
+    ${prmRow('Hip Flexor','hfPwrL','hfPwrR','hfRomL','hfRomR','hfMasL','hfMasR','0–130°')}
+    <div style="height:10px"></div>
+    ${prmRow('Knee Extensor','kePwrL','kePwrR','keRomL','keRomR','keMasL','keMasR','0–135°')}
+  </div></div>
+
+  <!-- Popliteal Angle -->
+  <div class="card"><div class="cbody">
+    <div class="subsec">Popliteal Angle (Hamstrings)</div>
+    <div class="hint">R1 = passive stretch catch · R2 = full passive ROM · Shift = dynamic spasticity (compare with/without contralateral hip flex)</div>
+    <div class="bg4"><div></div><div class="ch">R1</div><div class="ch">R2</div><div class="ch">Shift +?</div></div>
+    <div class="bg4">
+      <div class="rl">Left</div>${ni('poplR1L',d.poplR1L)} ${ni('poplR2L',d.poplR2L)}
+      <div style="text-align:center"><div class="chb ${d.hmShiftL?'on':''}" style="margin:0 auto" onclick="tog('supine','hmShiftL')"></div></div>
+    </div>
+    <div class="bg4">
+      <div class="rl">Right</div>${ni('poplR1R',d.poplR1R)} ${ni('poplR2R',d.poplR2R)}
+      <div style="text-align:center"><div class="chb ${d.hmShiftR?'on':''}" style="margin:0 auto" onclick="tog('supine','hmShiftR')"></div></div>
+    </div>
+    ${(d.hmShiftL||d.hmShiftR)?`
+    <div style="margin-top:8px">
+      <div class="flbl" style="margin-bottom:4px">Hamstring Shift — Change in degrees</div>
+      <div class="bg3"><div></div><div class="ch">LEFT</div><div class="ch">RIGHT</div></div>
+      <div class="bg3"><div class="rl">Δ degrees<small>pos shift = ant. pelvic tilt</small></div>${ni('hmShiftDegL',d.hmShiftDegL)} ${ni('hmShiftDegR',d.hmShiftDegR)}</div>
+      <div class="hint">Positive shift ≥ 20° → suggests anterior pelvic tilt component</div>
+    </div>`:'' }
+  </div></div>
+
+  <!-- Ankle DF + PF -->
+  <div class="card"><div class="cbody">
+    <div class="subsec">Ankle Dorsiflexion &amp; Plantarflexion</div>
+    ${prmRow('Ankle DF','adfPwrL','adfPwrR','adfRomL','adfRomR','adfMasL','adfMasR','0–20°')}
+    <div style="height:10px"></div>
+    ${prmRow('Ankle PF','apfPwrL','apfPwrR','apfRomL','apfRomR','apfMasL','apfMasR','0–50°')}
+  </div></div>
+
+  <!-- Silverskiold -->
+  <div class="card"><div class="cbody">
+    <div class="subsec">Silverskiold Test (Ankle DF ROM)</div>
+    <div style="display:grid;grid-template-columns:1.2fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;gap:5px;margin-bottom:6px;align-items:center">
+      <div></div><div class="ch">L KE R1</div><div class="ch">L KE R2</div><div class="ch">L KF R1</div><div class="ch">L KF R2</div>
+      <div class="ch">R KE R1</div><div class="ch">R KE R2</div><div class="ch">R KF R1</div><div class="ch">R KF R2</div>
+    </div>
+    <div style="display:grid;grid-template-columns:1.2fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;gap:5px;align-items:center">
+      <div class="rl">DF angle</div>
+      ${ni('silvKeL',d.silvKeL)}${ni('silvKe2L',d.silvKe2L)}${ni('silvKfL',d.silvKfL)}${ni('silvKf2L',d.silvKf2L)}
+      ${ni('silvKeR',d.silvKeR)}${ni('silvKe2R',d.silvKe2R)}${ni('silvKfR',d.silvKfR)}${ni('silvKf2R',d.silvKf2R)}
+    </div>
+    ${(silvIntL||silvIntR)?`<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px">
+      <div class="interp">${silvIntL?'L: '+silvIntL:''}</div>
+      <div class="interp">${silvIntR?'R: '+silvIntR:''}</div>
+    </div>`:''}
+    <div class="hint" style="margin-top:6px">KE limited, KF normal → <b>Gastrocnemius</b> · Both limited → <b>Soleus / Achilles</b></div>
+  </div></div>`;
+}
+
+function ni3(label,sub,kL,kR,d){
+  return `<div class="rl">${label}<small>${sub}</small></div>${ni(kL,d[kL],'cm')} ${ni(kR,d[kR],'cm')}`;
+}
+
+// ─────────────────────────────
+// 5. Supine at Bed Edge (Thomas + Phelps)
+// ─────────────────────────────
+function tBedEdge(p){
+  const d=p.bedEdge;
+
+  function phRow(side, kHekeR1,kHekeR2,kHekfR1,kHekfR2,kHfkfR1,kHfkfR2){
+    return `
+    <div class="subsec">${side} Side</div>
+    <div style="display:grid;grid-template-columns:1.8fr 1fr 1fr;gap:6px;margin-bottom:4px">
+      <div></div><div class="ch">R1</div><div class="ch">R2</div>
+    </div>
+    <div style="display:grid;grid-template-columns:1.8fr 1fr 1fr;gap:6px;margin-bottom:6px;align-items:center">
+      <div class="rl"><b>HE/KE</b><small>All adductors (longus, gracilis, magnus, brevis)</small></div>
+      ${ni(kHekeR1,d[kHekeR1])} ${ni(kHekeR2,d[kHekeR2])}
+    </div>
+    <div style="display:grid;grid-template-columns:1.8fr 1fr 1fr;gap:6px;margin-bottom:6px;align-items:center">
+      <div class="rl"><b>HE/KF</b><small>Eliminates gracilis + med. hamstring</small></div>
+      ${ni(kHekfR1,d[kHekfR1])} ${ni(kHekfR2,d[kHekfR2])}
+    </div>
+    <div style="display:grid;grid-template-columns:1.8fr 1fr 1fr;gap:6px;align-items:center">
+      <div class="rl"><b>HF/KF</b><small>Eliminates add. longus → magnus/brevis</small></div>
+      ${ni(kHfkfR1,d[kHfkfR1])} ${ni(kHfkfR2,d[kHfkfR2])}
+    </div>`;
+  }
+
+  return `
+  <div class="posbadge">🦵 Supine — Moved to Bed Edge</div>
+
+  <!-- Modified Thomas -->
+  <div class="card"><div class="cbody">
+    <div class="subsec">Modified Thomas Test (Hip Flexion Contracture)</div>
+    <div class="hint">Flex both hips to chest, lower one leg at a time. Hip angle (Iliopsoas) + Knee drop (Rectus femoris).<br>Normal: Hip extends to 0°, Knee flexes &gt;80°</div>
+    <div class="bg3" style="margin-top:8px"><div></div><div class="ch">LEFT</div><div class="ch">RIGHT</div></div>
+    <div class="bg3" style="margin-bottom:6px">
+      <div class="rl">Hip Ext°<small>Iliopsoas tightness</small></div>
+      ${ni('thomHipL',d.thomHipL)} ${ni('thomHipR',d.thomHipR)}
+    </div>
+    <div class="bg3">
+      <div class="rl">Knee Flex°<small>Rectus femoris tightness</small></div>
+      ${ni('thomKneeL',d.thomKneeL)} ${ni('thomKneeR',d.thomKneeR)}
+    </div>
+  </div></div>
+
+  <!-- Phelps / Baker -->
+  <div class="card"><div class="cbody">
+    <div class="subsec">Phelps / Baker Test (Adductor Spasticity)</div>
+    <div class="hint">Measure hip abduction angle. R1 = spastic catch · R2 = full passive ROM.<br>
+    Comparing positions helps isolate which adductor muscle is tightest.</div>
+    ${phRow('Right','phHekeR1R','phHekeR2R','phHekfR1R','phHekfR2R','phHfkfR1R','phHfkfR2R')}
+    <div style="border-top:1px solid var(--border);margin:12px 0"></div>
+    ${phRow('Left','phHekeR1L','phHekeR2L','phHekfR1L','phHekfR2L','phHfkfR1L','phHfkfR2L')}
+  </div></div>`;
+}
+
+// ─────────────────────────────
+// 6. Prone
+// ─────────────────────────────
+function tProne(p){
+  const d=p.prone;
+  function prmRow2(label,kPwrL,kPwrR,kRomL,kRomR,norm){
+    return `
+    <div class="bg5" style="margin-bottom:4px"><div></div><div class="ch">Pwr L</div><div class="ch">Pwr R</div><div class="ch">ROM L</div><div class="ch">ROM R</div></div>
+    <div class="bg5">
+      <div class="rl"><b>${label}</b>${norm?`<small>${norm}</small>`:''}</div>
+      ${si('f_'+kPwrL,d[kPwrL],pwrOpts)}${si('f_'+kPwrR,d[kPwrR],pwrOpts)}
+      ${ni(kPwrL+'_rom',d[kRomL],'°')}${ni(kPwrR+'_rom',d[kRomR],'°')}
+    </div>`;
+  }
+
+  return `
+  <div class="posbadge">🔄 Prone Position</div>
+
+  <!-- Staheli -->
+  <div class="card"><div class="cbody">
+    <div class="subsec">Staheli Test — Hip Extension (ขาห้อยปลายเตียง)</div>
+    <div class="hint">Lift one leg, measure hip extension angle. Negative = hip flexion contracture.<br>–10° = threshold for contracture</div>
+    <div class="frow" style="margin-top:8px">
+      <div class="fg"><label class="flbl">Left (°)</label><input class="fi" type="number" id="f_staheliL" value="${esc(d.staheliL)}" placeholder="-10 to +10" oninput="autoSave()"></div>
+      <div class="fg"><label class="flbl">Right (°)</label><input class="fi" type="number" id="f_staheliR" value="${esc(d.staheliR)}" placeholder="-10 to +10" oninput="autoSave()"></div>
+    </div>
+  </div></div>
+
+  <!-- Duncan-Ely -->
+  <div class="card"><div class="cbody">
+    <div class="subsec">Duncan-Ely Test — Rectus Femoris (นอนคว่ำเต็มตัว)</div>
+    <div class="hint">Rapidly flex knee in prone. Positive = ipsilateral buttock rises → Rectus femoris spasticity/contracture</div>
+    <div class="chi" onclick="tog('prone','duncanL')">
+      <div class="chb ${d.duncanL?'on':''}"></div>
+      <div class="chlbl">Positive Left <small>Left buttock rises</small></div></div>
+    <div class="chi" onclick="tog('prone','duncanR')">
+      <div class="chb ${d.duncanR?'on':''}"></div>
+      <div class="chlbl">Positive Right <small>Right buttock rises</small></div></div>
+  </div></div>
+
+  <!-- Hip Ext + Knee Flex power -->
+  <div class="card"><div class="cbody">
+    <div class="subsec">Hip Extension &amp; Knee Flexion (Motor Power + ROM)</div>
+    <div class="bg5" style="margin-bottom:4px"><div></div><div class="ch">Pwr L</div><div class="ch">Pwr R</div><div class="ch">ROM L</div><div class="ch">ROM R</div></div>
+    <div class="bg5" style="margin-bottom:8px">
+      <div class="rl"><b>Hip Extension</b><small>norm: 0–30°</small></div>
+      ${si('hipExtPwrL',d.hipExtPwrL,pwrOpts)}${si('hipExtPwrR',d.hipExtPwrR,pwrOpts)}
+      ${ni('hipExtRomL',d.hipExtRomL)}${ni('hipExtRomR',d.hipExtRomR)}
+    </div>
+    <div class="bg5">
+      <div class="rl"><b>Knee Flexion</b><small>norm: 0–135°</small></div>
+      ${si('kfPwrL',d.kfPwrL,pwrOpts)}${si('kfPwrR',d.kfPwrR,pwrOpts)}
+      ${ni('kfRomL',d.kfRomL)}${ni('kfRomR',d.kfRomR)}
+    </div>
+  </div></div>
+
+  <!-- Rotational Profile -->
+  <div class="card"><div class="cbody">
+    <div class="subsec">Rotational Profile</div>
+    <div class="bg4"><div></div><div class="ch">LEFT</div><div class="ch">RIGHT</div><div class="ch">Normal</div></div>
+    ${[
+      ['Hip IR (Anteversion)','hirL','hirR','20–60°'],
+      ['Hip ER (Retroversion)','herL','herR','10–60°'],
+      ['Thigh-Foot Angle','tfaL','tfaR','5–30°'],
+      ['Transmalleolar Axis','transmalL','transmalR','—'],
+    ].map(([label,kL,kR,norm])=>`
+    <div class="bg4" style="margin-bottom:6px">
+      <div class="rl">${label}</div>
+      ${ni(kL,d[kL])} ${ni(kR,d[kR])}
+      <div style="font-size:11px;text-align:center;color:var(--t3)">${norm}</div>
+    </div>`).join('')}
+    <div class="subsec">Heel Bisection</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="fg"><label class="flbl">Left</label>
+        <select class="fi" id="f_heelBisL" onchange="autoSave()"><option value="">—</option>
+          ${['1st toe','1-2 space','2nd toe','2-3 space','3rd toe','3-4 space','4th toe','4-5 space','5th toe'].map(o=>`<option value="${o}" ${d.heelBisL===o?'selected':''}>${o}</option>`).join('')}
+        </select></div>
+      <div class="fg"><label class="flbl">Right</label>
+        <select class="fi" id="f_heelBisR" onchange="autoSave()"><option value="">—</option>
+          ${['1st toe','1-2 space','2nd toe','2-3 space','3rd toe','3-4 space','4th toe','4-5 space','5th toe'].map(o=>`<option value="${o}" ${d.heelBisR===o?'selected':''}>${o}</option>`).join('')}
+        </select></div>
+    </div>
+    <div class="hint">Normal: 2nd–3rd toe. MTA ≠ Heel bisection → foot deformity</div>
+  </div></div>`;
+}
+
+// ─────────────────────────────
+// 7. Other Tests
+// ─────────────────────────────
+function tOther(p){
+  const d=p.other;
+  return `<div class="card"><div class="cbody">
+    <div class="subsec">Upper Extremity (Motor Power)</div>
+    <div class="frow">
+      <div class="fg"><label class="flbl">UE Power — Right</label>
+        <select class="fi" id="f_uePwrR" onchange="autoSave()"><option value="">—</option>
+          ${['5','4+','4','4-','3+','3','3-','2','1','0'].map(v=>`<option value="${v}" ${d.uePwrR===v?'selected':''}>${v}</option>`).join('')}
+        </select></div>
+      <div class="fg"><label class="flbl">UE Power — Left</label>
+        <select class="fi" id="f_uePwrL" onchange="autoSave()"><option value="">—</option>
+          ${['5','4+','4','4-','3+','3','3-','2','1','0'].map(v=>`<option value="${v}" ${d.uePwrL===v?'selected':''}>${v}</option>`).join('')}
+        </select></div>
+    </div>
+    <div class="fg" style="margin-bottom:10px"><label class="flbl">Hand Function / Fine Motor</label>
+      <select class="fi" id="f_handFn" onchange="autoSave()">
+        <option value="">—</option>
+        ${['Normal','Mild impairment','Moderate impairment','Severe impairment','Hemiplegia (R)','Hemiplegia (L)'].map(v=>`<option value="${v}" ${d.handFn===v?'selected':''}>${v}</option>`).join('')}
+      </select></div>
+    <div class="subsec">Functional Tests</div>
+    <div class="frow">
+      <div class="fg"><label class="flbl">Kneeling Walk</label>
+        <select class="fi" id="f_kneelingWalk" onchange="autoSave()">
+          <option value="">—</option>${['Can do','Cannot do','Partial'].map(v=>`<option value="${v}" ${d.kneelingWalk===v?'selected':''}>${v}</option>`).join('')}
+        </select></div>
+      <div class="fg"><label class="flbl">Sitting Balance</label>
+        <select class="fi" id="f_sittingBalance" onchange="autoSave()">
+          <option value="">—</option>${['Independent','With support','Poor/None'].map(v=>`<option value="${v}" ${d.sittingBalance===v?'selected':''}>${v}</option>`).join('')}
+        </select></div>
+    </div>
+    <div class="fg"><label class="flbl">Additional Notes</label>
+      <textarea class="fi" id="f_otherNotes" placeholder="Any additional findings, scoliosis check, other…" oninput="autoSave()">${esc(d.notes)}</textarea></div>
+  </div></div>`;
+}
+
+// ─────────────────────────────
+// 8. Assessment & Plan
+// ─────────────────────────────
+function tPlan(p){
+  const d=p.plan;
+  const sc=v=>['','Normal','Spastic only','Contracture only','Both'].map(o=>`<option value="${o}" ${v===o?'selected':''}>${o||'—'}</option>`).join('');
+  const gp=v=>['','True Equinus','Jump Knee','Apparent Equinus','Crouch Gait','Knee Recurvatum','Normal'].map(o=>`<option value="${o}" ${v===o?'selected':''}>${o||'—'}</option>`).join('');
+  const ort=v=>['','Solid AFO','GRAFO','Articulated (Hinged) AFO','SMO','KAFO','No orthosis'].map(o=>`<option value="${o}" ${v===o?'selected':''}>${o||'—'}</option>`).join('');
+
+  return `
+  <div class="card"><div class="cbody">
+    <div class="subsec">Clinical Reasoning — Spastic vs Contracture</div>
+    <div class="hint">Categorize each muscle group based on R1/R2 difference, special tests, and ROM</div>
+    <div class="bg3" style="margin-bottom:4px"><div></div><div class="ch">LEFT</div><div class="ch">RIGHT</div></div>
+    ${[
+      ['Hip Flexor','hipFlexL_assess','hipFlexR_assess'],
+      ['Hamstrings / Knee Flex','kneeFlexL_assess','kneeFlexR_assess'],
+      ['Ankle PF (Gastroc/Soleus)','anklePfL_assess','anklePfR_assess'],
+      ['Adductors','adductorsL_assess','adductorsR_assess'],
+    ].map(([label,kL,kR])=>`
+    <div class="bg3" style="margin-bottom:6px">
+      <div class="rl">${label}</div>
+      <select class="ti" id="f_${kL}" onchange="autoSave()">${sc(d[kL])}</select>
+      <select class="ti" id="f_${kR}" onchange="autoSave()">${sc(d[kR])}</select>
+    </div>`).join('')}
+    <div class="subsec">Sagittal Gait Pattern (Final Assessment)</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="fg"><label class="flbl">Left Foot Pattern</label><select class="fi" id="f_sagPatL" onchange="autoSave()">${gp(d.sagPatL)}</select></div>
+      <div class="fg"><label class="flbl">Right Foot Pattern</label><select class="fi" id="f_sagPatR" onchange="autoSave()">${gp(d.sagPatR)}</select></div>
+    </div>
+  </div></div>
+
+  <div class="card"><div class="cbody">
+    <div class="subsec">Problem List</div>
+    <textarea class="fi" id="f_problemList" rows="5"
+      placeholder="1. Spastic diplegia GMFCS III&#10;2. Bilateral hip flexion contracture&#10;3. Equinus deformity bilateral&#10;4. Femoral anteversion bilateral&#10;5. Crouch gait (L) / Apparent gait (R)"
+      oninput="autoSave()">${esc(d.problemList)}</textarea>
+  </div></div>
+
+  <div class="card"><div class="cbody">
+    <div class="subsec">Management Plan</div>
+    <div class="fg" style="margin-bottom:10px"><label class="flbl">Oral Medication</label>
+      <input class="fi" id="f_oralMeds" value="${esc(d.oralMeds)}" placeholder="e.g. Baclofen 5mg TID" oninput="autoSave()"></div>
+    <div class="fg" style="margin-bottom:10px"><label class="flbl">Injection (BTX-A / Phenol)</label>
+      <textarea class="fi" id="f_botox" rows="3" placeholder="e.g. BTX-A 12u/kg (max 400u)&#10;Bilateral Gastroc: 100u each&#10;Bilateral Adductors: 50u each" oninput="autoSave()">${esc(d.botox)}</textarea></div>
+    <div class="fg" style="margin-bottom:10px"><label class="flbl">Surgical Referral</label>
+      <input class="fi" id="f_surgical" value="${esc(d.surgical)}" placeholder="e.g. Consult Ortho — bilateral Achilles lengthening" oninput="autoSave()"></div>
+    <div class="frow">
+      <div class="fg"><label class="flbl">Orthosis Type</label>
+        <select class="fi" id="f_orthosisType" onchange="autoSave()">${ort(d.orthosisType)}</select></div>
+    </div>
+    <div class="fg" style="margin-bottom:10px"><label class="flbl">Orthosis Details / Rationale</label>
+      <input class="fi" id="f_orthosisDetail" value="${esc(d.orthosisDetail)}" placeholder="e.g. Solid AFO bilateral — accommodate equinus, no active DF" oninput="autoSave()"></div>
+    <div class="fg" style="margin-bottom:10px"><label class="flbl">PT Program</label>
+      <textarea class="fi" id="f_pt" rows="3" placeholder="Ambulation training&#10;Stretching: bilateral gastroc, hip flexors&#10;Strengthening: hip abductors, quads" oninput="autoSave()">${esc(d.pt)}</textarea></div>
+    <div class="fg" style="margin-bottom:10px"><label class="flbl">OT Program</label>
+      <input class="fi" id="f_ot" value="${esc(d.ot)}" placeholder="ADL training, hand function, if applicable" oninput="autoSave()"></div>
+    <div class="chi" onclick="tog('plan','hipSurveillance')">
+      <div class="chb ${d.hipSurveillance?'on':''}"></div>
+      <div class="chlbl">Hip Surveillance X-ray <small>Order if not yet done (even if older than screening age)</small></div></div>
+    <div class="fg" style="margin-top:10px"><label class="flbl">Holistic Care / Other</label>
+      <textarea class="fi" id="f_holistic" rows="2" placeholder="School support, nutrition consult, weight management…" oninput="autoSave()">${esc(d.holistic)}</textarea></div>
+  </div></div>
+
+  <button class="btnp" style="margin-top:4px" onclick="nav('sum')">📄 View Case Report</button>`;
+}
+
+// ════════════════════════════════════════════════
+// SUMMARY / CASE REPORT
+// ════════════════════════════════════════════════
+function renderSum(){
+  const p=curr();
+  if(!p){
+    if(!S.patients.length) return `<div class="empty"><div class="ei">📋</div><div class="et">No Patients</div><div class="ed">Create a patient from the Patients tab first.</div></div>`;
+    let h=`<div class="alert ainfo">ℹ️ Select a patient to view their case report.</div>`;
+    S.patients.forEach(pt=>{h+=`<button class="btns" style="margin-bottom:8px" onclick="S.pid='${pt.id}';render()">📋 ${esc(pt.profile.name||'Unnamed')}</button>`;});
+    return h;
+  }
+  const report=generateReport(p);
+  return `
+  <div class="no-print" style="display:flex;gap:8px;margin-bottom:12px">
+    <button class="btnp" style="flex:2" onclick="printSum()">🖨️ Print / Save PDF</button>
+    <button class="btns" style="flex:1" onclick="nav('exam')">✏️ Edit</button>
+  </div>
+  ${report}
+  <div class="no-print" style="margin-top:8px">
+    <button class="btnd" onclick="delPt('${p.id}')">🗑️ Delete Record</button>
+  </div>`;
+}
+
+function generateReport(p){
+  const pr=p.profile,hx=p.hx,g=p.gait,su=p.supine,be=p.bedEdge,pn=p.prone,ot=p.other,pl=p.plan;
+  const sex=pr.sex==='M'?'ชาย':'หิง';
+  let h=`<div class="sumhdr"><div style="display:flex;justify-content:space-between;align-items:flex-start"><div><div class="sumname">${esc(pr.name||'Unnamed')}</div><div class="sumsub">${[pr.hn?'HN: '+pr.hn:'',pr.age?'Age '+pr.age+' yrs':'',pr.cpType].filter(Boolean).join(' · ')||'—'}</div><div class="sumchips">${pr.gmfcs?`<span class="chip">GMFCS Level ${esc(pr.gmfcs)}</span>`:''} ${pr.macs?`<span class="chip">MACS ${esc(pr.macs)}</span>`:''} ${hx.ambStatus?`<span class="chip">${esc(hx.ambStatus)}</span>`:''}</div></div><div style="text-align:right;font-size:12px;opacity:.85;flex-shrink:0;margin-left:8px"><div>${fmtDate(pr.date)}</div>${pr.examiner?`<div>${esc(pr.examiner)}</div>`:''}</div></div></div>`;
+  const bg=[];
+  if(pr.age){let s=`ผู้ป่วย${sex} อายุ ${pr.age||'?'} ปี เป็น ${pr.cpType||'CP'} GMFCS Level ${pr.gmfcs||'?'}`;if(hx.ambStatus)s+=` (${hx.ambStatus})`;bg.push(s);}
+  if(hx.conferenceReason)bg.push('นำเข้าที่ประชุมเพื่อ: '+hx.conferenceReason);
+  if(hx.previousTx)bg.push('ผ่านการรักษา: '+hx.previousTx);
+  if(bg.length)h+=`<div class="sumsec"><div class="sst">🗂️ Background</div><div class="pretext">${bg.map(esc).join('\n')}</div></div>`;
+  const gl=[];
+  gl.push('Device: '+(g.device||'Not specified'),'');
+  gl.push('Coronal plane:');
+  if(g.trunkBend&&g.trunkBend!=='none')gl.push('  • Lateral trunk bending to '+g.trunkBend.toUpperCase());
+  if(g.scissoring)gl.push('  • Scissoring gait');
+  if(g.equinovarus&&g.equinovarus!=='none')gl.push('  • Equinovarus / Toe-in: '+g.equinovarus);
+  const fp2=[];
+  if(g.fpaL&&g.fpaL!=='normal')fp2.push('L: '+(g.fpaL==='toeIn'?'Toe-In':'Toe-Out'));
+  if(g.fpaR&&g.fpaR!=='normal')fp2.push('R: '+(g.fpaR==='toeIn'?'Toe-In':'Toe-Out'));
+  if(fp2.length)gl.push('  • FPA: '+fp2.join(', '));
+  gl.push('','Sagittal plane:');
+  if(g.lumbarLordosis)gl.push('  • Lumbar Hyperlordosis');
+  ['hipFlexL','hipFlexR','kneeFlexL','kneeFlexR','anklePatL','anklePatR'].forEach(k=>{if(g[k])gl.push('  • '+k.replace(/([LR])$/,' $1')+': '+g[k]);});
+  if(g.gaitNotes)gl.push('','Notes: '+g.gaitNotes);
+  h+=`<div class="sumsec"><div class="sst">🚶 Gait Analysis</div><div class="pretext">${esc(gl.join('\n'))}</div></div>`;
+  function lr(l,r,u){u=u||'°';if(!l&&!r)return '<span style="color:var(--t3)">—</span>';return `<span class="lr"><span class="lrl">L</span>${l||'—'}${u}</span><span class="lr"><span class="lrl">R</span>${r||'—'}${u}</span>`;}
+  function lrv(l,r){return lr(l,r,'');}
+  function yn(l,r,ll,rl){const p2=[];if(l)p2.push(`<span class="tpos">${ll||'Pos L'}</span>`);if(r)p2.push(`<span class="tpos">${rl||'Pos R'}</span>`);return p2.length?p2.join(' '):'<span class="tneg">Negative</span>';}
+  const sL=silvInterp(su.silvKeL,su.silvKfL),sR=silvInterp(su.silvKeR,su.silvKfR);
+  h+=`<div class="sumsec"><div class="sst">🛏️ Supine Exam</div>
+    <div class="srow"><div class="sk">LLD True</div><div class="sv">${lr(su.lldTrueL,su.lldTrueR,' cm')}</div></div>
+    <div class="srow"><div class="sk">LLD Apparent</div><div class="sv">${lr(su.lldAppL,su.lldAppR,' cm')}</div></div>
+    <div class="srow"><div class="sk">Hip Flexor Pwr/ROM/MAS</div><div class="sv">${lrv(su.hfPwrL,su.hfPwrR)} | ${lr(su.hfRomL,su.hfRomR)} | ${lrv(su.hfMasL,su.hfMasR)}</div></div>
+    <div class="srow"><div class="sk">Knee Extensor Pwr/ROM/MAS</div><div class="sv">${lrv(su.kePwrL,su.kePwrR)} | ${lr(su.keRomL,su.keRomR)} | ${lrv(su.keMasL,su.keMasR)}</div></div>
+    <div class="srow"><div class="sk">Popliteal R1 / R2</div><div class="sv">${lr(su.poplR1L,su.poplR1R)} / ${lr(su.poplR2L,su.poplR2R)}</div></div>
+    ${(su.hmShiftL||su.hmShiftR)?`<div class="srow"><div class="sk">Hamstring Shift</div><div class="sv">${yn(su.hmShiftL,su.hmShiftR,'Pos L','Pos R')} Δ${lr(su.hmShiftDegL,su.hmShiftDegR)}</div></div>`:''}
+    <div class="srow"><div class="sk">Ankle DF Pwr/ROM/MAS</div><div class="sv">${lrv(su.adfPwrL,su.adfPwrR)} | ${lr(su.adfRomL,su.adfRomR)} | ${lrv(su.adfMasL,su.adfMasR)}</div></div>
+    <div class="srow"><div class="sk">Ankle PF Pwr/ROM/MAS</div><div class="sv">${lrv(su.apfPwrL,su.apfPwrR)} | ${lr(su.apfRomL,su.apfRomR)} | ${lrv(su.apfMasL,su.apfMasR)}</div></div>
+    <div class="srow"><div class="sk">Silverskiold KE/KF (R1)</div><div class="sv">${lr(su.silvKeL,su.silvKeR)} / ${lr(su.silvKfL,su.silvKfR)}</div></div>
+    ${(sL||sR)?`<div class="srow"><div class="sk">Silverskiold Interp.</div><div class="sv">${sL?`<span class="lr"><span class="lrl">L</span><span class="twarn">${sL}</span></span>`:''} ${sR?`<span class="lr"><span class="lrl">R</span><span class="twarn">${sR}</span></span>`:''}</div></div>`:''}
+  </div>`;
+  h+=`<div class="sumsec"><div class="sst">🦵 Bed Edge (Thomas &amp; Phelps/Baker)</div>
+    <div class="srow"><div class="sk">Thomas Hip Ext° (Iliopsoas)</div><div class="sv">${lr(be.thomHipL,be.thomHipR)}</div></div>
+    <div class="srow"><div class="sk">Thomas Knee Flex° (Rectus)</div><div class="sv">${lr(be.thomKneeL,be.thomKneeR)}</div></div>
+    <div class="srow"><div class="sk">Phelps HE/KE R1/R2</div><div class="sv">${lr(be.phHekeR1L,be.phHekeR1R)} / ${lr(be.phHekeR2L,be.phHekeR2R)}</div></div>
+    <div class="srow"><div class="sk">Phelps HE/KF (−gracilis) R1/R2</div><div class="sv">${lr(be.phHekfR1L,be.phHekfR1R)} / ${lr(be.phHekfR2L,be.phHekfR2R)}</div></div>
+    <div class="srow"><div class="sk">Phelps HF/KF (magnus/brevis) R1/R2</div><div class="sv">${lr(be.phHfkfR1L,be.phHfkfR1R)} / ${lr(be.phHfkfR2L,be.phHfkfR2R)}</div></div>
+  </div>`;
+  h+=`<div class="sumsec"><div class="sst">🔄 Prone Exam</div>
+    <div class="srow"><div class="sk">Staheli Hip Ext</div><div class="sv">${lr(pn.staheliL,pn.staheliR)}</div></div>
+    <div class="srow"><div class="sk">Duncan-Ely (Rectus)</div><div class="sv">${yn(pn.duncanL,pn.duncanR)}</div></div>
+    <div class="srow"><div class="sk">Hip Ext Pwr/ROM</div><div class="sv">${lrv(pn.hipExtPwrL,pn.hipExtPwrR)} | ${lr(pn.hipExtRomL,pn.hipExtRomR)}</div></div>
+    <div class="srow"><div class="sk">Knee Flex Pwr/ROM</div><div class="sv">${lrv(pn.kfPwrL,pn.kfPwrR)} | ${lr(pn.kfRomL,pn.kfRomR)}</div></div>
+    <div class="srow"><div class="sk">Hip IR (n:20-60°)</div><div class="sv">${lr(pn.hirL,pn.hirR)}</div></div>
+    <div class="srow"><div class="sk">Hip ER (n:10-60°)</div><div class="sv">${lr(pn.herL,pn.herR)}</div></div>
+    <div class="srow"><div class="sk">Thigh-Foot Angle (n:5-30°)</div><div class="sv">${lr(pn.tfaL,pn.tfaR)}</div></div>
+    <div class="srow"><div class="sk">Transmalleolar Axis</div><div class="sv">${lr(pn.transmalL,pn.transmalR)}</div></div>
+    ${(pn.heelBisL||pn.heelBisR)?`<div class="srow"><div class="sk">Heel Bisection</div><div class="sv"><span class="lr"><span class="lrl">L</span>${pn.heelBisL||'—'}</span><span class="lr"><span class="lrl">R</span>${pn.heelBisR||'—'}</span></div></div>`:''}
+  </div>`;
+  if(ot.uePwrR||ot.uePwrL||ot.handFn||ot.kneelingWalk||ot.sittingBalance){
+    h+=`<div class="sumsec"><div class="sst">➕ Other Tests</div>
+      ${(ot.uePwrL||ot.uePwrR)?`<div class="srow"><div class="sk">UE Motor Power</div><div class="sv"><span class="lr"><span class="lrl">L</span>${ot.uePwrL||'—'}</span><span class="lr"><span class="lrl">R</span>${ot.uePwrR||'—'}</span></div></div>`:''}
+      ${ot.handFn?`<div class="srow"><div class="sk">Hand Function</div><div class="sv">${esc(ot.handFn)}</div></div>`:''}
+      ${ot.kneelingWalk?`<div class="srow"><div class="sk">Kneeling Walk</div><div class="sv">${esc(ot.kneelingWalk)}</div></div>`:''}
+      ${ot.sittingBalance?`<div class="srow"><div class="sk">Sitting Balance</div><div class="sv">${esc(ot.sittingBalance)}</div></div>`:''}
+    </div>`;
+  }
+  const anyR2=pl.hipFlexL_assess||pl.hipFlexR_assess||pl.kneeFlexL_assess||pl.kneeFlexR_assess||pl.anklePfL_assess||pl.anklePfR_assess||pl.sagPatL||pl.sagPatR;
+  if(anyR2){
+    h+=`<div class="sumsec"><div class="sst">🔍 Clinical Reasoning</div>
+      ${(pl.hipFlexL_assess||pl.hipFlexR_assess)?`<div class="srow"><div class="sk">Hip Flexor</div><div class="sv"><span class="lr"><span class="lrl">L</span>${esc(pl.hipFlexL_assess||'—')}</span><span class="lr"><span class="lrl">R</span>${esc(pl.hipFlexR_assess||'—')}</span></div></div>`:''}
+      ${(pl.kneeFlexL_assess||pl.kneeFlexR_assess)?`<div class="srow"><div class="sk">Hamstrings</div><div class="sv"><span class="lr"><span class="lrl">L</span>${esc(pl.kneeFlexL_assess||'—')}</span><span class="lr"><span class="lrl">R</span>${esc(pl.kneeFlexR_assess||'—')}</span></div></div>`:''}
+      ${(pl.anklePfL_assess||pl.anklePfR_assess)?`<div class="srow"><div class="sk">Ankle PF</div><div class="sv"><span class="lr"><span class="lrl">L</span>${esc(pl.anklePfL_assess||'—')}</span><span class="lr"><span class="lrl">R</span>${esc(pl.anklePfR_assess||'—')}</span></div></div>`:''}
+      ${(pl.adductorsL_assess||pl.adductorsR_assess)?`<div class="srow"><div class="sk">Adductors</div><div class="sv"><span class="lr"><span class="lrl">L</span>${esc(pl.adductorsL_assess||'—')}</span><span class="lr"><span class="lrl">R</span>${esc(pl.adductorsR_assess||'—')}</span></div></div>`:''}
+      ${(pl.sagPatL||pl.sagPatR)?`<div class="srow"><div class="sk">Gait Pattern</div><div class="sv">${pl.sagPatL?`<span class="lr"><span class="lrl">L</span><span class="twarn">${esc(pl.sagPatL)}</span></span>`:''} ${pl.sagPatR?`<span class="lr"><span class="lrl">R</span><span class="twarn">${esc(pl.sagPatR)}</span></span>`:''}</div></div>`:''}
+    </div>`;
+  }
+  const hasPlan=pl.problemList||pl.oralMeds||pl.botox||pl.surgical||pl.orthosisType||pl.pt||pl.ot||pl.hipSurveillance||pl.holistic;
+  if(hasPlan){
+    h+=`<div class="sumsec"><div class="sst">📝 Assessment &amp; Plan</div>`;
+    if(pl.problemList)h+=`<div style="margin-bottom:10px"><div style="font-size:11px;font-weight:700;color:var(--t2);text-transform:uppercase;margin-bottom:4px">Problem List</div><div class="pretext">${esc(pl.problemList)}</div></div>`;
+    const pi=[];
+    if(pl.oralMeds)pi.push('<b>Oral medication:</b> '+esc(pl.oralMeds));
+    if(pl.botox)pi.push('<b>Injection (BTX-A):</b><br>'+esc(pl.botox).replace(/\n/g,'<br>'));
+    if(pl.surgical)pi.push('<b>Surgical referral:</b> '+esc(pl.surgical));
+    if(pl.orthosisType)pi.push('<b>Orthosis:</b> '+esc(pl.orthosisType)+(pl.orthosisDetail?' — '+esc(pl.orthosisDetail):''));
+    if(pl.pt)pi.push('<b>PT program:</b><br>'+esc(pl.pt).replace(/\n/g,'<br>'));
+    if(pl.ot)pi.push('<b>OT program:</b> '+esc(pl.ot));
+    if(pl.hipSurveillance)pi.push('<b>Hip surveillance X-ray:</b> Order');
+    if(pl.holistic)pi.push('<b>Holistic care:</b> '+esc(pl.holistic));
+    if(pi.length)h+=`<div>${pi.map(i=>`<div style="margin-bottom:8px;font-size:13px;line-height:1.6">${i}</div>`).join('')}</div>`;
+    h+=`</div>`;
+  }
+  return h;
+}
+
+const FMAP={
+  profile:{name:'f_name',hn:'f_hn',age:'f_age',dob:'f_dob',sex:'f_sex',cpType:'f_cpType',gmfcs:'f_gmfcs',macs:'f_macs',examiner:'f_examiner',date:'f_date'},
+  hx:{ambStatus:'f_ambStatus',adl:'f_adl',communication:'f_communication',school:'f_school',conferenceReason:'f_conferenceReason',previousTx:'f_previousTx'},
+  gait:{device:'f_device',hipFlexL:'f_hipFlexL',hipFlexR:'f_hipFlexR',kneeFlexL:'f_kneeFlexL',kneeFlexR:'f_kneeFlexR',anklePatL:'f_anklePatL',anklePatR:'f_anklePatR',gaitNotes:'f_gaitNotes'},
+  supine:{lldTrueL:'f_lldTrueL',lldTrueR:'f_lldTrueR',lldAppL:'f_lldAppL',lldAppR:'f_lldAppR',hfPwrL:'f_hfPwrL',hfPwrR:'f_hfPwrR',hfRomL:'f_hfRomL',hfRomR:'f_hfRomR',hfMasL:'f_hfMasL',hfMasR:'f_hfMasR',kePwrL:'f_kePwrL',kePwrR:'f_kePwrR',keRomL:'f_keRomL',keRomR:'f_keRomR',keMasL:'f_keMasL',keMasR:'f_keMasR',poplR1L:'f_poplR1L',poplR2L:'f_poplR2L',poplR1R:'f_poplR1R',poplR2R:'f_poplR2R',hmShiftDegL:'f_hmShiftDegL',hmShiftDegR:'f_hmShiftDegR',adfPwrL:'f_adfPwrL',adfPwrR:'f_adfPwrR',adfRomL:'f_adfRomL',adfRomR:'f_adfRomR',adfMasL:'f_adfMasL',adfMasR:'f_adfMasR',apfPwrL:'f_apfPwrL',apfPwrR:'f_apfPwrR',apfRomL:'f_apfRomL',apfRomR:'f_apfRomR',apfMasL:'f_apfMasL',apfMasR:'f_apfMasR',silvKeL:'f_silvKeL',silvKfL:'f_silvKfL',silvKe2L:'f_silvKe2L',silvKf2L:'f_silvKf2L',silvKeR:'f_silvKeR',silvKfR:'f_silvKfR',silvKe2R:'f_silvKe2R',silvKf2R:'f_silvKf2R'},
+  bedEdge:{thomHipL:'f_thomHipL',thomKneeL:'f_thomKneeL',thomHipR:'f_thomHipR',thomKneeR:'f_thomKneeR',phHekeR1L:'f_phHekeR1L',phHekeR2L:'f_phHekeR2L',phHekfR1L:'f_phHekfR1L',phHekfR2L:'f_phHekfR2L',phHfkfR1L:'f_phHfkfR1L',phHfkfR2L:'f_phHfkfR2L',phHekeR1R:'f_phHekeR1R',phHekeR2R:'f_phHekeR2R',phHekfR1R:'f_phHekfR1R',phHekfR2R:'f_phHekfR2R',phHfkfR1R:'f_phHfkfR1R',phHfkfR2R:'f_phHfkfR2R'},
+  prone:{staheliL:'f_staheliL',staheliR:'f_staheliR',hipExtPwrL:'f_hipExtPwrL',hipExtPwrR:'f_hipExtPwrR',hipExtRomL:'f_hipExtPwrL_rom',hipExtRomR:'f_hipExtPwrR_rom',kfPwrL:'f_kfPwrL',kfPwrR:'f_kfPwrR',kfRomL:'f_kfPwrL_rom',kfRomR:'f_kfPwrR_rom',hirL:'f_hirL',hirR:'f_hirR',herL:'f_herL',herR:'f_herR',tfaL:'f_tfaL',tfaR:'f_tfaR',transmalL:'f_transmalL',transmalR:'f_transmalR',heelBisL:'f_heelBisL',heelBisR:'f_heelBisR'},
+  other:{uePwrR:'f_uePwrR',uePwrL:'f_uePwrL',handFn:'f_handFn',kneelingWalk:'f_kneelingWalk',sittingBalance:'f_sittingBalance',notes:'f_otherNotes'},
+  plan:{hipFlexL_assess:'f_hipFlexL_assess',hipFlexR_assess:'f_hipFlexR_assess',kneeFlexL_assess:'f_kneeFlexL_assess',kneeFlexR_assess:'f_kneeFlexR_assess',anklePfL_assess:'f_anklePfL_assess',anklePfR_assess:'f_anklePfR_assess',adductorsL_assess:'f_adductorsL_assess',adductorsR_assess:'f_adductorsR_assess',sagPatL:'f_sagPatL',sagPatR:'f_sagPatR',oralMeds:'f_oralMeds',botox:'f_botox',surgical:'f_surgical',orthosisType:'f_orthosisType',orthosisDetail:'f_orthosisDetail',pt:'f_pt',ot:'f_ot',holistic:'f_holistic',problemList:'f_problemList'}
+};
+
+function autoSave(){
+  const p=curr();if(!p)return;
+  Object.entries(FMAP).forEach(([sec,fields])=>{Object.entries(fields).forEach(([key,elId])=>{const el=document.getElementById(elId);if(el)p[sec][key]=el.value;});});
+  p.updatedAt=new Date().toISOString();save();
+  if(S.view==='exam'){const t=document.getElementById('htitle');if(t)t.textContent=p.profile.name||'New Patient';}
+}
+function tog(sec,key){const p=curr();if(!p)return;p[sec][key]=!p[sec][key];save();render();}
+function setFPA(key,val){const p=curr();if(!p)return;p.gait[key]=val;save();render();}
+function setField(sec,key,val){const p=curr();if(!p)return;p[sec][key]=val;save();render();}
+function silvInterp(ke,kf){const e=parseFloat(ke);if(isNaN(e)||e>=0)return null;const f=parseFloat(kf);if(isNaN(f)||f>=0)return 'Gastrocnemius';return 'Soleus/Achilles';}
+function fmtDate(d){if(!d)return '—';try{return new Date(d).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});}catch(e2){return d;}}
+function esc(s){if(s==null)return '';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.style.opacity='1';clearTimeout(el._t);el._t=setTimeout(()=>el.style.opacity='0',2000);}
+function printSum(){autoSave();window.print();}
+load();
+render();
+</script>
+</body>
+</html>
